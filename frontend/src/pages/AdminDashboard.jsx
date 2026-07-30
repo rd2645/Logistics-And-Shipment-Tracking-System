@@ -66,32 +66,52 @@ const AdminDashboard = () => {
         }
     };
 
-    // --- MOCK DATA FOR ENTERPRISE DEMO PRESENTATION ---
-    const monthlyTrendData = [
-        { name: 'Jan', revenue: 65000, shipments: 240 },
-        { name: 'Feb', revenue: 31000, shipments: 139 },
-        { name: 'Mar', revenue: 48000, shipments: 980 },
-        { name: 'Apr', revenue: 32000, shipments: 390 },
-        { name: 'May', revenue: 64000, shipments: 480 },
-        { name: 'Jun', revenue: 50000, shipments: 380 },
-        { name: 'Jul', revenue: 38000, shipments: 430 },
-    ];
+    const realMonthlyData = React.useMemo(() => {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const map = {};
+        months.forEach(m => map[m] = { name: m, revenue: 0, shipments: 0 });
 
-    const statusData = [
-        { name: 'Delivered', value: 65, color: '#10b981' },
-        { name: 'In Transit', value: 25, color: '#3b82f6' },
-        { name: 'Pending', value: 10, color: '#f59e0b' },
-    ];
+        shipments.forEach(s => {
+            if (s.createdAt) {
+                const date = new Date(s.createdAt);
+                const monthName = months[date.getMonth()];
+                map[monthName].shipments += 1;
+                map[monthName].revenue += 15 + ((s.weight || 10) * 5); 
+            }
+        });
+        
+        const currentMonthIndex = new Date().getMonth();
+        // Show last 6 months up to current
+        const startIndex = Math.max(0, currentMonthIndex - 5);
+        return months.slice(startIndex, currentMonthIndex + 1).map(m => map[m]);
+    }, [shipments]);
 
-    const freightData = [
-        { country: 'USA', volume: 4000 },
-        { country: 'UK', volume: 3000 },
-        { country: 'Germany', volume: 2000 },
-        { country: 'France', volume: 2780 },
-        { country: 'Japan', volume: 1890 },
-        { country: 'India', volume: 2390 },
-    ];
-    // ----------------------------------------------------
+    const realStatusData = React.useMemo(() => {
+        let delivered = 0, transit = 0, pending = 0;
+        shipments.forEach(s => {
+            if (s.status === 'DELIVERED') delivered++;
+            else if (s.status === 'IN_TRANSIT' || s.status === 'IN TRANSIT') transit++;
+            else pending++;
+        });
+        return [
+            { name: 'Delivered', value: delivered, color: '#10b981' },
+            { name: 'In Transit', value: transit, color: '#3b82f6' },
+            { name: 'Pending', value: pending, color: '#f59e0b' },
+        ].filter(d => d.value > 0);
+    }, [shipments]);
+
+    const realFreightData = React.useMemo(() => {
+        const map = {};
+        shipments.forEach(s => {
+            if (s.deliveryAddress) {
+                // simple heuristic to get region from address
+                const parts = s.deliveryAddress.split(',');
+                const region = parts.length > 1 ? parts[parts.length - 1].trim() : s.deliveryAddress.trim();
+                map[region] = (map[region] || 0) + (s.weight || 10);
+            }
+        });
+        return Object.keys(map).slice(0, 6).map(region => ({ country: region, volume: map[region] }));
+    }, [shipments]);
 
     return (
         <div className="container mt-5 animate-fade-in mb-5">
@@ -127,7 +147,7 @@ const AdminDashboard = () => {
                     <div className="card glass-panel p-4 shadow-sm" style={{ height: '350px' }}>
                         <h5 className="fw-bold mb-3 text-accent text-uppercase small">Monthly Revenue & Shipments Trend</h5>
                         <ResponsiveContainer width="100%" height="100%">
-                            <ComposedChart data={monthlyTrendData}>
+                            <ComposedChart data={realMonthlyData}>
                                 <XAxis dataKey="name" stroke="#ccc" fontSize={12} />
                                 <YAxis yAxisId="left" stroke="#ccc" fontSize={12} tickFormatter={(val) => `$${val/1000}k`} />
                                 <YAxis yAxisId="right" orientation="right" stroke="#ccc" fontSize={12} />
@@ -146,7 +166,7 @@ const AdminDashboard = () => {
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie 
-                                    data={statusData} 
+                                    data={realStatusData} 
                                     cx="50%" 
                                     cy="50%" 
                                     innerRadius={70} 
@@ -154,7 +174,7 @@ const AdminDashboard = () => {
                                     paddingAngle={5} 
                                     dataKey="value"
                                 >
-                                    {statusData.map((entry, index) => (
+                                    {realStatusData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={entry.color} />
                                     ))}
                                 </Pie>
@@ -172,12 +192,12 @@ const AdminDashboard = () => {
                     <div className="card glass-panel p-4 shadow-sm" style={{ height: '300px' }}>
                         <h5 className="fw-bold mb-3 text-accent text-uppercase small">Freight Volume by Region</h5>
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={freightData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                            <BarChart data={realFreightData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                                 <XAxis dataKey="country" stroke="#ccc" fontSize={12} />
                                 <YAxis stroke="#ccc" fontSize={12} />
                                 <Tooltip cursor={{fill: 'rgba(255,255,255,0.05)'}} wrapperStyle={{ backgroundColor: '#1e293b', borderRadius: '8px', border: 'none' }} />
                                 <Bar dataKey="volume" fill="#8b5cf6" radius={[4, 4, 0, 0]} name="Volume (TEU)">
-                                    {freightData.map((entry, index) => (
+                                    {realFreightData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'][index % 6]} />
                                     ))}
                                 </Bar>
