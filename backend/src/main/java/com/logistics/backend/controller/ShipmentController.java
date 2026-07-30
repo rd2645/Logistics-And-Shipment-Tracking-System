@@ -19,7 +19,7 @@ public class ShipmentController {
     @Autowired
     private ShipmentService shipmentService;
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<?> createShipment(@RequestBody CreateShipmentRequest request, Authentication authentication) {
         Shipment shipment = shipmentService.createShipment(request, Long.parseLong(authentication.getName()));
         return ResponseEntity.ok(shipment);

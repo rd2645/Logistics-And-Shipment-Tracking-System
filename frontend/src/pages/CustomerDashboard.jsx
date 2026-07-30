@@ -33,13 +33,15 @@ const CustomerDashboard = () => {
         }
 
         try {
-            await api.post('/shipments', formData);
+            await api.post('/shipments/create', formData);
             alert("Shipment created successfully!");
             setFormData({ senderName: '', receiverName: '', pickupAddress: '', deliveryAddress: '', weight: '', shipmentType: 'Standard', paymentMethod: 'COD' });
             setShowPaymentModal(false);
             fetchShipments();
         } catch (err) {
-            alert("Failed to create shipment.");
+            console.error("Shipment error:", err.response || err);
+            const errorMsg = err.response?.data?.message || err.response?.data || err.message || "Failed to create shipment.";
+            alert("Failed to create shipment: " + (typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg)));
         }
     };
 
