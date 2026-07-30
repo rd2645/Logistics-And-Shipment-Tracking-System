@@ -8,4 +8,5 @@ import java.util.List;
 public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
     Optional<Shipment> findByTrackingNumber(String trackingNumber);
     List<Shipment> findByCustomerId(Long customerId);
+    long countByStatusIn(List<com.logistics.backend.enums.ShipmentStatus> statuses);
 }

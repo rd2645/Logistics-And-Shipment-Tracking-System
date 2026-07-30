@@ -41,6 +41,12 @@ public class Shipment {
     @Column(length = 50)
     private ShipmentStatus status;
 
+    @Column(name = "payment_method", length = 50)
+    private String paymentMethod; // e.g., "COD" or "ONLINE"
+
+    @Column(name = "payment_status", length = 50)
+    private String paymentStatus; // e.g., "PENDING" or "COMPLETED"
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -80,6 +86,12 @@ public class Shipment {
 
     public ShipmentStatus getStatus() { return status; }
     public void setStatus(ShipmentStatus status) { this.status = status; }
+
+    public String getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+
+    public String getPaymentStatus() { return paymentStatus; }
+    public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

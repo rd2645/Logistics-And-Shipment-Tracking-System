@@ -5,12 +5,10 @@ import com.logistics.backend.dto.TrackShipmentResponse;
 import com.logistics.backend.entity.Customer;
 import com.logistics.backend.entity.Shipment;
 import com.logistics.backend.entity.ShipmentTracking;
-import com.logistics.backend.entity.User;
 import com.logistics.backend.enums.ShipmentStatus;
 import com.logistics.backend.repository.CustomerRepository;
 import com.logistics.backend.repository.ShipmentRepository;
 import com.logistics.backend.repository.ShipmentTrackingRepository;
-import com.logistics.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,16 +26,12 @@ public class ShipmentService {
     private CustomerRepository customerRepository;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private ShipmentTrackingRepository trackingRepository;
 
-    public Shipment createShipment(CreateShipmentRequest request, String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
-        Customer customer = customerRepository.findByUserId(user.getId()).orElseGet(() -> {
+    public Shipment createShipment(CreateShipmentRequest request, Long userId) {
+        Customer customer = customerRepository.findByUserId(userId).orElseGet(() -> {
             Customer newCustomer = new Customer();
-            newCustomer.setUser(user);
+            newCustomer.setUserId(userId);
             newCustomer.setAddress(request.getPickupAddress());
             return customerRepository.save(newCustomer);
         });
@@ -51,6 +45,10 @@ public class ShipmentService {
         shipment.setDeliveryAddress(request.getDeliveryAddress());
         shipment.setWeight(request.getWeight());
         shipment.setShipmentType(request.getShipmentType());
+        
+        shipment.setPaymentMethod(request.getPaymentMethod() != null ? request.getPaymentMethod() : "COD");
+        shipment.setPaymentStatus(shipment.getPaymentMethod().equals("ONLINE") ? "COMPLETED" : "PENDING");
+        
         shipment.setStatus(ShipmentStatus.PENDING);
         shipment.setCreatedAt(LocalDateTime.now());
 
@@ -78,15 +76,25 @@ public class ShipmentService {
         );
     }
     
-    public List<Shipment> getCustomerShipments(String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
-        Customer customer = customerRepository.findByUserId(user.getId()).orElseThrow(() -> new RuntimeException("Customer not found"));
+    public List<Shipment> getCustomerShipments(Long userId) {
+        Customer customer = customerRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("Customer not found"));
         return shipmentRepository.findByCustomerId(customer.getId());
     }
+
+    @Autowired
+    private com.logistics.backend.repository.WarehouseRepository warehouseRepository;
 
     public Shipment updateShipmentStatus(Long shipmentId, ShipmentStatus status, String location) {
         Shipment shipment = shipmentRepository.findById(shipmentId)
                 .orElseThrow(() -> new RuntimeException("Shipment not found"));
+        
+        if (shipment.getStatus() == ShipmentStatus.IN_WAREHOUSE && status != ShipmentStatus.IN_WAREHOUSE) {
+            com.logistics.backend.entity.Warehouse w = shipment.getCurrentWarehouse();
+            if (w != null && w.getCurrentLoad() != null && w.getCurrentLoad() > 0) {
+                w.setCurrentLoad(w.getCurrentLoad() - 1);
+                warehouseRepository.save(w);
+            }
+        }
         
         addTrackingUpdate(shipment, status, location);
         return shipment;
@@ -102,5 +110,32 @@ public class ShipmentService {
         
         shipment.setStatus(status);
         shipmentRepository.save(shipment);
+    }
+
+    @Autowired
+    private com.logistics.backend.repository.FeedbackRepository feedbackRepository;
+    @Autowired
+    private com.logistics.backend.repository.DeliveryAssignmentRepository assignmentRepository;
+
+    public com.logistics.backend.entity.Feedback rateShipment(Long shipmentId, com.logistics.backend.dto.RateRequest request) {
+        Shipment shipment = shipmentRepository.findById(shipmentId)
+                .orElseThrow(() -> new RuntimeException("Shipment not found"));
+        
+        if (shipment.getStatus() != ShipmentStatus.DELIVERED) {
+            throw new RuntimeException("Can only rate delivered shipments.");
+        }
+
+        com.logistics.backend.entity.DeliveryAssignment assignment = assignmentRepository.findByShipmentId(shipmentId).orElse(null);
+
+        com.logistics.backend.entity.Feedback feedback = new com.logistics.backend.entity.Feedback();
+        feedback.setShipment(shipment);
+        if (assignment != null) {
+            feedback.setDeliveryAgent(assignment.getDeliveryAgent());
+        }
+        feedback.setRating(request.getRating());
+        feedback.setComment(request.getComment());
+        feedback.setCreatedAt(LocalDateTime.now());
+
+        return feedbackRepository.save(feedback);
     }
 }

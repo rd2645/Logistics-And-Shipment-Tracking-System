@@ -9,6 +9,7 @@ public class CreateShipmentRequest {
     private String deliveryAddress;
     private BigDecimal weight;
     private String shipmentType;
+    private String paymentMethod; // "ONLINE" or "COD"
 
     // Getters and Setters
     public String getSenderName() { return senderName; }
@@ -28,4 +29,7 @@ public class CreateShipmentRequest {
 
     public String getShipmentType() { return shipmentType; }
     public void setShipmentType(String shipmentType) { this.shipmentType = shipmentType; }
+
+    public String getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
 }

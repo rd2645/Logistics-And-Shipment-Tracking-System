@@ -21,7 +21,7 @@ public class ShipmentController {
 
     @PostMapping
     public ResponseEntity<?> createShipment(@RequestBody CreateShipmentRequest request, Authentication authentication) {
-        Shipment shipment = shipmentService.createShipment(request, authentication.getName());
+        Shipment shipment = shipmentService.createShipment(request, Long.parseLong(authentication.getName()));
         return ResponseEntity.ok(shipment);
     }
 
@@ -32,6 +32,11 @@ public class ShipmentController {
 
     @GetMapping("/my-shipments")
     public ResponseEntity<List<Shipment>> getMyShipments(Authentication authentication) {
-        return ResponseEntity.ok(shipmentService.getCustomerShipments(authentication.getName()));
+        return ResponseEntity.ok(shipmentService.getCustomerShipments(Long.parseLong(authentication.getName())));
+    }
+
+    @PostMapping("/{id}/rate")
+    public ResponseEntity<com.logistics.backend.entity.Feedback> rateShipment(@PathVariable Long id, @RequestBody com.logistics.backend.dto.RateRequest request) {
+        return ResponseEntity.ok(shipmentService.rateShipment(id, request));
     }
 }

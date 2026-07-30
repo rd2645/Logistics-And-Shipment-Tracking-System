@@ -4,12 +4,10 @@ import com.logistics.backend.dto.AssignAgentRequest;
 import com.logistics.backend.entity.DeliveryAgent;
 import com.logistics.backend.entity.DeliveryAssignment;
 import com.logistics.backend.entity.Shipment;
-import com.logistics.backend.entity.User;
 import com.logistics.backend.enums.ShipmentStatus;
 import com.logistics.backend.repository.DeliveryAgentRepository;
 import com.logistics.backend.repository.DeliveryAssignmentRepository;
 import com.logistics.backend.repository.ShipmentRepository;
-import com.logistics.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,9 +16,6 @@ import java.util.List;
 
 @Service
 public class AdminService {
-
-    @Autowired
-    private UserRepository userRepository;
 
     @Autowired
     private ShipmentRepository shipmentRepository;
@@ -33,10 +28,6 @@ public class AdminService {
     
     @Autowired
     private ShipmentService shipmentService;
-
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
-    }
 
     public List<Shipment> getAllShipments() {
         return shipmentRepository.findAll();
@@ -56,9 +47,19 @@ public class AdminService {
         
         // Update shipment status if needed
         if (shipment.getStatus() == ShipmentStatus.IN_WAREHOUSE || shipment.getStatus() == ShipmentStatus.PENDING) {
-            shipmentService.addTrackingUpdate(shipment, ShipmentStatus.OUT_FOR_DELIVERY, "Assigned to Agent: " + agent.getUser().getName());
+            shipmentService.addTrackingUpdate(shipment, ShipmentStatus.OUT_FOR_DELIVERY, "Assigned to Agent ID: " + agent.getId());
         }
 
         return deliveryAssignmentRepository.save(assignment);
+    }
+
+    public com.logistics.backend.dto.AdminAnalyticsResponse getAnalytics() {
+        long totalShipments = shipmentRepository.count();
+        long activeDeliveries = shipmentRepository.countByStatusIn(
+                List.of(ShipmentStatus.IN_TRANSIT, ShipmentStatus.OUT_FOR_DELIVERY)
+        );
+        // Mock revenue: $15 base + ($5 * totalShipments)
+        java.math.BigDecimal revenue = new java.math.BigDecimal(15 + (5 * totalShipments));
+        return new com.logistics.backend.dto.AdminAnalyticsResponse(totalShipments, activeDeliveries, revenue);
     }
 }

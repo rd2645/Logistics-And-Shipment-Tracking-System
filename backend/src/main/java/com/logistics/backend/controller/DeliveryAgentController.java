@@ -21,8 +21,8 @@ public class DeliveryAgentController {
     private DeliveryAgentService deliveryAgentService;
 
     @GetMapping("/assignments")
-    public ResponseEntity<List<Shipment>> getAssignedShipments(Authentication authentication) {
-        return ResponseEntity.ok(deliveryAgentService.getAssignedShipments(authentication.getName()));
+    public ResponseEntity<List<Shipment>> getAssignments(Authentication authentication) {
+        return ResponseEntity.ok(deliveryAgentService.getAssignedShipments(Long.parseLong(authentication.getName())));
     }
 
     @PutMapping("/shipments/{id}/status")

@@ -36,6 +36,14 @@ public class WarehouseService {
         Warehouse warehouse = warehouseRepository.findById(warehouseId)
                 .orElseThrow(() -> new RuntimeException("Warehouse not found"));
 
+        if (warehouse.getCurrentLoad() != null && warehouse.getCapacity() != null) {
+            if (warehouse.getCurrentLoad() >= warehouse.getCapacity()) {
+                throw new RuntimeException("Warehouse is at full capacity!");
+            }
+            warehouse.setCurrentLoad(warehouse.getCurrentLoad() + 1);
+            warehouseRepository.save(warehouse);
+        }
+
         shipment.setCurrentWarehouse(warehouse);
         shipmentService.addTrackingUpdate(shipment, ShipmentStatus.IN_WAREHOUSE, warehouse.getWarehouseName() + ", " + warehouse.getCity());
         

@@ -19,6 +19,12 @@ public class Warehouse {
     @Column(length = 50)
     private String state;
 
+    @Column(nullable = false, columnDefinition = "int default 100")
+    private Integer capacity = 100;
+
+    @Column(nullable = false, columnDefinition = "int default 0")
+    private Integer currentLoad = 0;
+
     public Warehouse() {}
 
     public Long getId() { return id; }
@@ -32,4 +38,10 @@ public class Warehouse {
 
     public String getState() { return state; }
     public void setState(String state) { this.state = state; }
+
+    public Integer getCapacity() { return capacity; }
+    public void setCapacity(Integer capacity) { this.capacity = capacity; }
+
+    public Integer getCurrentLoad() { return currentLoad; }
+    public void setCurrentLoad(Integer currentLoad) { this.currentLoad = currentLoad; }
 }
