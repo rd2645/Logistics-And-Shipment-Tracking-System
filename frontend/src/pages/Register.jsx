@@ -34,7 +34,7 @@ const Register = () => {
                         <div className="card-body">
                             <div className="text-center mb-5">
                                 <h2 className="fw-bold mb-2">Create Account</h2>
-                                <p className="text-muted">Join the Logistics System</p>
+                                <p className="text-muted">Join CargoX</p>
                             </div>
                             {error && <div className="alert alert-danger" style={{background: 'rgba(220,53,69,0.1)', color: '#ff6b6b', border: 'none'}}>{error}</div>}
                             <form onSubmit={handleSubmit}>

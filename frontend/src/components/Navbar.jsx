@@ -27,7 +27,7 @@ const Navbar = () => {
         <nav className={`navbar navbar-expand-lg navbar-dark ${isHome ? 'position-absolute w-100 z-3' : 'glass-nav sticky-top mb-4'}`} style={isHome ? { background: 'transparent' } : {}}>
             <div className={`container ${isHome ? 'mt-2' : ''}`}>
                 <Link className="navbar-brand fw-bold fs-4 text-white" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }} to="/">
-                    <span style={{ color: 'var(--accent-primary)' }}>Logistics</span> System
+                    <span style={{ color: 'var(--accent-primary)' }}>Cargo</span>X
                 </Link>
                 <button className="navbar-toggler shadow-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span className="navbar-toggler-icon"></span>

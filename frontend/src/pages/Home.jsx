@@ -230,7 +230,7 @@ const Home = () => {
                         </div>
                     </div>
                     <div className="border-top border-secondary pt-4 text-center">
-                        <p className="text-muted small mb-0">&copy; {new Date().getFullYear()} Logistics System. All rights reserved.</p>
+                        <p className="text-muted small mb-0">&copy; {new Date().getFullYear()} CargoX. All rights reserved.</p>
                     </div>
                 </div>
             </footer>
