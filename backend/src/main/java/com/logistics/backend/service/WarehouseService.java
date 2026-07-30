@@ -49,4 +49,35 @@ public class WarehouseService {
         
         return shipmentRepository.save(shipment);
     }
+
+    @jakarta.annotation.PostConstruct
+    public void seedWarehouses() {
+        if (warehouseRepository.count() == 0) {
+            Warehouse w1 = new Warehouse();
+            w1.setWarehouseName("Mumbai Central Hub");
+            w1.setCity("Mumbai");
+            w1.setState("Maharashtra");
+            w1.setCapacity(1000);
+            w1.setCurrentLoad(450);
+            warehouseRepository.save(w1);
+
+            Warehouse w2 = new Warehouse();
+            w2.setWarehouseName("Delhi North Depot");
+            w2.setCity("New Delhi");
+            w2.setState("Delhi");
+            w2.setCapacity(800);
+            w2.setCurrentLoad(200);
+            warehouseRepository.save(w2);
+
+            Warehouse w3 = new Warehouse();
+            w3.setWarehouseName("Bangalore Tech Park");
+            w3.setCity("Bangalore");
+            w3.setState("Karnataka");
+            w3.setCapacity(500);
+            w3.setCurrentLoad(150);
+            warehouseRepository.save(w3);
+            
+            System.out.println("✅ Seeded 3 default warehouses into the database.");
+        }
+    }
 }

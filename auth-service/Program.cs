@@ -26,6 +26,27 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    if (!context.Users.Any(u => u.Email == "agent1@logistics.com"))
+    {
+        for (int i = 1; i <= 10; i++)
+        {
+            context.Users.Add(new AuthService.Models.User
+            {
+                Name = $"Delivery Agent {i}",
+                Email = $"agent{i}@logistics.com",
+                Phone = $"555-010{i:D2}",
+                Role = AuthService.Models.Role.DELIVERY_AGENT,
+                Password = BCrypt.Net.BCrypt.HashPassword("password123")
+            });
+        }
+        context.SaveChanges();
+        Console.WriteLine("✅ Seeded 10 Delivery Agents.");
+    }
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

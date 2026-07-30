@@ -22,7 +22,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(org.springframework.security.config.Customizer.withDefaults())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/auth/**", "/api/shipments/track/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/shipments/create", "/api/shipments/customer/**").hasRole("CUSTOMER")
                 .requestMatchers("/api/shipments/update-status", "/api/shipments/agent/**").hasRole("DELIVERY_AGENT")

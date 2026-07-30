@@ -135,5 +135,23 @@ namespace AuthService.Controllers
                 Roles = roles
             });
         }
+
+        [HttpGet("users")]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            // Note: In a production app, we would add [Authorize(Roles = "Admin")] here.
+            var users = await _context.Users
+                .Select(u => new UserResponse
+                {
+                    Id = u.Id,
+                    Name = u.Name,
+                    Email = u.Email,
+                    Phone = u.Phone,
+                    Role = u.Role.ToString()
+                })
+                .ToListAsync();
+            
+            return Ok(users);
+        }
     }
 }

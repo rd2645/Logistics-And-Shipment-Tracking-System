@@ -4,10 +4,12 @@ import com.logistics.backend.dto.AssignAgentRequest;
 import com.logistics.backend.entity.DeliveryAgent;
 import com.logistics.backend.entity.DeliveryAssignment;
 import com.logistics.backend.entity.Shipment;
+import com.logistics.backend.entity.Warehouse;
 import com.logistics.backend.enums.ShipmentStatus;
 import com.logistics.backend.repository.DeliveryAgentRepository;
 import com.logistics.backend.repository.DeliveryAssignmentRepository;
 import com.logistics.backend.repository.ShipmentRepository;
+import com.logistics.backend.repository.WarehouseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,16 +31,29 @@ public class AdminService {
     @Autowired
     private ShipmentService shipmentService;
 
+    @Autowired
+    private WarehouseRepository warehouseRepository;
+
     public List<Shipment> getAllShipments() {
         return shipmentRepository.findAll();
+    }
+
+    public List<Warehouse> getAllWarehouses() {
+        return warehouseRepository.findAll();
     }
 
     public DeliveryAssignment assignDeliveryAgent(AssignAgentRequest request) {
         Shipment shipment = shipmentRepository.findById(request.getShipmentId())
                 .orElseThrow(() -> new RuntimeException("Shipment not found"));
                 
-        DeliveryAgent agent = deliveryAgentRepository.findById(request.getAgentId())
-                .orElseThrow(() -> new RuntimeException("Delivery Agent not found"));
+        DeliveryAgent agent = deliveryAgentRepository.findByUserId(request.getAgentId())
+                .orElseGet(() -> {
+                    DeliveryAgent newAgent = new DeliveryAgent();
+                    newAgent.setUserId(request.getAgentId());
+                    newAgent.setVehicleNumber("UNASSIGNED-VAN");
+                    newAgent.setAvailabilityStatus("AVAILABLE");
+                    return deliveryAgentRepository.save(newAgent);
+                });
 
         DeliveryAssignment assignment = new DeliveryAssignment();
         assignment.setShipment(shipment);
@@ -47,7 +62,7 @@ public class AdminService {
         
         // Update shipment status if needed
         if (shipment.getStatus() == ShipmentStatus.IN_WAREHOUSE || shipment.getStatus() == ShipmentStatus.PENDING) {
-            shipmentService.addTrackingUpdate(shipment, ShipmentStatus.OUT_FOR_DELIVERY, "Assigned to Agent ID: " + agent.getId());
+            shipmentService.addTrackingUpdate(shipment, ShipmentStatus.OUT_FOR_DELIVERY, "Assigned to Agent (User ID: " + agent.getUserId() + ")");
         }
 
         return deliveryAssignmentRepository.save(assignment);

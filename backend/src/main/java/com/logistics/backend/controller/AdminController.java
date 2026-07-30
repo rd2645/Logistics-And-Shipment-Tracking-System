@@ -3,6 +3,7 @@ package com.logistics.backend.controller;
 import com.logistics.backend.dto.AssignAgentRequest;
 import com.logistics.backend.entity.DeliveryAssignment;
 import com.logistics.backend.entity.Shipment;
+import com.logistics.backend.entity.Warehouse;
 import com.logistics.backend.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,11 @@ public class AdminController {
     @GetMapping("/shipments")
     public ResponseEntity<List<Shipment>> getAllShipments() {
         return ResponseEntity.ok(adminService.getAllShipments());
+    }
+
+    @GetMapping("/warehouses")
+    public ResponseEntity<List<Warehouse>> getAllWarehouses() {
+        return ResponseEntity.ok(adminService.getAllWarehouses());
     }
 
     @PostMapping("/assign-agent")

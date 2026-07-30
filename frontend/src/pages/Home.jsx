@@ -1,14 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import api from '../api';
 
 const Home = () => {
     const navigate = useNavigate();
+    const [trackingResult, setTrackingResult] = useState(null);
+    const [trackingError, setTrackingError] = useState('');
 
-    const handleTrack = (e) => {
+    const handleTrack = async (e) => {
         e.preventDefault();
-        const trackingNumber = e.target.trackingNumber.value;
-        if (trackingNumber) {
-            navigate('/login', { state: { message: "Please log in to track your shipment." } });
+        const trackingNumber = e.target.trackingNumber.value.trim();
+        if (!trackingNumber) return;
+
+        setTrackingError('');
+        setTrackingResult(null);
+
+        try {
+            const res = await api.get(`/shipments/track/${trackingNumber}`);
+            setTrackingResult(res.data);
+        } catch (err) {
+            setTrackingError('Shipment not found or tracking number is invalid.');
         }
     };
 
@@ -35,7 +46,7 @@ const Home = () => {
                             <input 
                                 type="text" 
                                 name="trackingNumber"
-                                className="form-control border-0 bg-transparent text-dark shadow-none fs-5" 
+                                className="form-control border-0 bg-transparent text-dark shadow-none fs-5 fw-bold" 
                                 placeholder="Enter tracking number..." 
                                 required 
                             />
@@ -43,6 +54,41 @@ const Home = () => {
                                 Track
                             </button>
                         </form>
+
+                        {/* Tracking Result Box */}
+                        {trackingError && (
+                            <div className="alert alert-danger mt-4 rounded-4 shadow-sm fw-bold border-0" role="alert">
+                                ⚠️ {trackingError}
+                            </div>
+                        )}
+                        {trackingResult && (
+                            <div className="card mt-4 rounded-4 shadow-lg border-0 bg-white text-start overflow-hidden animate-fade-in">
+                                <div className="card-header bg-primary text-white p-3 fw-bold d-flex justify-content-between align-items-center">
+                                    <span>Tracking: {trackingResult.trackingNumber}</span>
+                                    <span className="badge bg-light text-primary fs-6">{trackingResult.currentStatus}</span>
+                                </div>
+                                <div className="card-body p-4 text-dark">
+                                    <div className="row">
+                                        <div className="col-6 mb-3">
+                                            <h6 className="text-muted text-uppercase small fw-bold mb-1">Current Location</h6>
+                                            <div className="fs-5 fw-semibold">{trackingResult.currentLocation || 'Awaiting Update'}</div>
+                                        </div>
+                                        <div className="col-6 mb-3">
+                                            <h6 className="text-muted text-uppercase small fw-bold mb-1">Last Updated</h6>
+                                            <div className="fs-5 fw-semibold">{new Date(trackingResult.lastUpdate).toLocaleString()}</div>
+                                        </div>
+                                    </div>
+                                    <div className="progress mt-2 mb-1" style={{height: '10px'}}>
+                                        <div className={`progress-bar progress-bar-striped progress-bar-animated ${trackingResult.currentStatus === 'DELIVERED' ? 'bg-success' : 'bg-primary'}`} style={{width: trackingResult.currentStatus === 'DELIVERED' ? '100%' : trackingResult.currentStatus === 'IN_TRANSIT' ? '60%' : '30%'}}></div>
+                                    </div>
+                                    <div className="d-flex justify-content-between text-muted small fw-bold mt-2">
+                                        <span>Dispatched</span>
+                                        <span>In Transit</span>
+                                        <span>Delivered</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </section>
