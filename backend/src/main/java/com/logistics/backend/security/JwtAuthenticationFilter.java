@@ -32,15 +32,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
-            userIdStr = jwtUtil.extractClaim(token, claims -> claims.get("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", String.class));
+            userIdStr = jwtUtil.extractClaim(token, claims -> {
+                Object val = claims.get("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier");
+                return val != null ? val.toString() : null;
+            });
             if (userIdStr == null) {
-                userIdStr = jwtUtil.extractClaim(token, claims -> claims.get("nameid", String.class));
+                userIdStr = jwtUtil.extractClaim(token, claims -> {
+                    Object val = claims.get("nameid");
+                    return val != null ? val.toString() : null;
+                });
             }
             if (userIdStr == null) {
-                userIdStr = jwtUtil.extractClaim(token, claims -> claims.get("sub", String.class));
+                userIdStr = jwtUtil.extractClaim(token, claims -> {
+                    Object val = claims.get("sub");
+                    return val != null ? val.toString() : null;
+                });
             }
             
-            role = jwtUtil.extractClaim(token, claims -> claims.get("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", String.class));
+            role = jwtUtil.extractClaim(token, claims -> {
+                Object val = claims.get("http://schemas.microsoft.com/ws/2008/06/identity/claims/role");
+                return val != null ? val.toString() : null;
+            });
             // C# JWT puts the role in a long schema URL by default if using ClaimTypes.Role.
         }
 
@@ -49,7 +61,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (jwtUtil.validateToken(token)) {
                 // If the JWT doesn't have the long URL role claim (e.g. customized), try "role"
                 if (role == null) {
-                     role = jwtUtil.extractClaim(token, claims -> claims.get("role", String.class));
+                     role = jwtUtil.extractClaim(token, claims -> {
+                         Object val = claims.get("role");
+                         return val != null ? val.toString() : null;
+                     });
                 }
 
                 SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role != null ? role : "ROLE_USER");
