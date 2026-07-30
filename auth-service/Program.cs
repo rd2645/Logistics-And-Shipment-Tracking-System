@@ -29,6 +29,23 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    
+    // Seed Professional Dummy Accounts for all Roles
+    if (!context.Users.Any(u => u.Email == "admin@cargox.com"))
+    {
+        // 1. Admin
+        context.Users.Add(new AuthService.Models.User { Name = "Marcus Thorne", Email = "admin@cargox.com", Phone = "555-0199", Role = AuthService.Models.Role.ADMIN, Password = BCrypt.Net.BCrypt.HashPassword("password123") });
+        // 2. Customer
+        context.Users.Add(new AuthService.Models.User { Name = "Emily Chen", Email = "emily.chen@cargox.com", Phone = "555-0188", Role = AuthService.Models.Role.CUSTOMER, Password = BCrypt.Net.BCrypt.HashPassword("password123") });
+        // 3. Warehouse Manager
+        context.Users.Add(new AuthService.Models.User { Name = "Robert Vance", Email = "rvance@cargox.com", Phone = "555-0177", Role = AuthService.Models.Role.WAREHOUSE_MANAGER, Password = BCrypt.Net.BCrypt.HashPassword("password123") });
+        // 4. Professional Delivery Agent
+        context.Users.Add(new AuthService.Models.User { Name = "Sarah Jenkins", Email = "sjenkins@cargox.com", Phone = "555-0166", Role = AuthService.Models.Role.DELIVERY_AGENT, Password = BCrypt.Net.BCrypt.HashPassword("password123") });
+        
+        context.SaveChanges();
+        Console.WriteLine("✅ Seeded Professional Dummy Accounts.");
+    }
+
     if (!context.Users.Any(u => u.Email == "agent1@logistics.com"))
     {
         for (int i = 1; i <= 10; i++)

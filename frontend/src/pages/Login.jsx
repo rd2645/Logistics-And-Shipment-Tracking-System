@@ -84,7 +84,7 @@ const Login = () => {
                                     </div>
                                     <input type="password" className="form-control form-control-lg mt-2" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required />
                                 </div>
-                                <button type="submit" className="btn btn-primary btn-lg w-100 mt-2 fw-bold">Sign In as {activeTab.split('_')[0]}</button>
+                                <button type="submit" className="btn btn-primary btn-lg w-100 mt-2 fw-bold">Sign In as {roles.find(r => r.id === activeTab)?.label.toUpperCase()}</button>
                             </form>
                             <p className="mt-4 text-center text-muted">
                                 Don't have an account? <a href="/register" className="fw-semibold">Register here</a>

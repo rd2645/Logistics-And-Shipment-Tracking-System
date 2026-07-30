@@ -22,7 +22,14 @@ const Register = () => {
             await api.post('/auth/register', formData);
             navigate('/login');
         } catch (err) {
-            setError(err.response?.data?.message || 'Registration failed');
+            console.error('Registration Error:', err.response || err);
+            const errorMsg = err.response?.data?.Message || 
+                             err.response?.data?.message || 
+                             err.response?.data?.title || 
+                             (err.response?.data?.errors ? JSON.stringify(err.response.data.errors) : null) ||
+                             err.message || 
+                             'Registration failed';
+            setError(errorMsg);
         }
     };
 
